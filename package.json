@@ -4,6 +4,14 @@
   "description": "Background image with site-wide frosted glass for the DeepSeek Harness web GUI",
   "type": "module",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ai-written/dsh-custom-background.git"
+  },
+  "homepage": "https://github.com/ai-written/dsh-custom-background#readme",
+  "bugs": {
+    "url": "https://github.com/ai-written/dsh-custom-background/issues"
+  },
   "exports": {
     ".": "./lib/index.js",
     "./client": "./client.js",
@@ -40,7 +48,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "test": "node test/manifest.mjs && node test/client.mjs"
+    "test": "node test/manifest.mjs && node test/client.mjs",
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "~3.18.4"

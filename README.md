@@ -106,7 +106,33 @@ Toast / Tooltip / HoverCard 故意保持不透明：它们是浮在文字上的�
 ## 测试
 
 ```bash
-npm test        # 配置钳制、路径解析、生成的 CSS、apply 契约（含引导行与图片路由）
+npm test        # 33 项离线检查：配置钳制、路径解析、生成的 CSS、apply 契约、表单写入、版本化 URL
 ```
 
 像素效果、真实加载路径需要跑一次 GUI 才算验过。
+
+## 发布
+
+发布走 GitHub Actions 的 **npm Trusted Publishing（OIDC）**，不需要任何 secret，与 `dsh-usage-badge` / `dsh-web-search-searxng` 一致。`.github/workflows/publish.yml` 的注释里写了每一步的用意。
+
+首次发布前，两件事各做一次：
+
+1. 把仓库推到 GitHub（`ai-written/dsh-custom-background`，`package.json` 的 `repository` 已按这个写）；
+2. 在 npm 上配置 Trusted Publisher：包页面 → Settings → Trusted Publisher → GitHub Actions，填 owner `ai-written`、repo `dsh-custom-background`、workflow `publish.yml`（包里还没有对应版本时，可以从 npm 的 "Publish a new package" 流程里先建好这个名字再配）。
+
+之后每次发版：
+
+```bash
+# 1) 改 package.json 的 version，提交
+# 2) 打 tag 并推上去 —— tag 与 version 不一致时 CI 会直接失败
+git tag v0.1.0 && git push origin dev v0.1.0
+```
+
+CI 会先跑 `npm test` 与 `npm pack --dry-run`，再由 OIDC 取凭据 `npm publish --access public`（provenance 自动附带）。只想预演的话，在 Actions 里手动触发 `publish` 并勾上 dry-run。
+
+本地手工发布也可以（`prepublishOnly` 会先跑测试）：
+
+```bash
+npm login
+npm publish --access public
+```
