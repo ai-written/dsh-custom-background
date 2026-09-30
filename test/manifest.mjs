@@ -178,18 +178,28 @@ check('config: defaults and clamping', () => {
   assert.equal(junk.dim, DEFAULTS.dim)
 })
 
-check('image: remote forms need no route, local paths resolve or return null', () => {
-  for (const value of ['https://x/y.png', 'data:image/png;base64,AA', 'blob:null/1', '/assets/x.png']) {
+check('image: scheme URLs are remote, filesystem paths are not', () => {
+  for (const value of ['https://x/y.png', 'data:image/png;base64,AA', 'blob:null/1']) {
     assert.equal(isRemoteImage(value), true, value)
     assert.equal(resolveImagePath(value), null, value)
   }
+  // A leading `/` is a filesystem path on Linux and macOS, not a URL. Treating it as a URL is
+  // the regression this asserts: it made every POSIX absolute path silently paint nothing.
+  assert.equal(isRemoteImage('/home/me/bg.png'), false, 'a POSIX absolute path must not read as a URL')
+  assert.equal(resolveImagePath('/home/me/definitely-absent-3a7f.png'), null)
+  // A leading `/` that names no file stays a path the application already serves.
+  assert.equal(resolveImageUrl(normalizeConfig({ image: '/assets/x.png' })), '/assets/x.png')
   assert.equal(isRemoteImage('D:\\pictures\\bg.jpg'), false)
   assert.equal(resolveImagePath('D:\\does\\not\\exist-9f2a.jpg'), null)
+
   const directory = mkdtempSync(join(tmpdir(), 'dsh-custom-background-'))
   try {
+    // `tmpdir()` is the platform's own absolute form: `C:\…` on Windows, `/tmp/…` on POSIX —
+    // which is exactly why this case fails on Linux if a leading slash is treated as a URL.
     const file = join(directory, 'bg.png')
     writeFileSync(file, 'not really a png')
     assert.equal(resolveImagePath(file), file)
+    assert.ok(resolveImageUrl(normalizeConfig({ image: file })).startsWith(`${ROUTE_PATH}?v=`))
 
     // A `file:` URL names the same local file; this is how a path copied out of a browser looks.
     const asUrl = `file:///${file.replaceAll('\\', '/')}`
@@ -224,10 +234,12 @@ check('image url: a local file is addressed by identity, so a swap changes the U
     writeFileSync(first, 'first but longer')
     assert.notEqual(urlOf(first), urlFirst)
 
-    // A remote image keeps its own URL; a missing one is nothing to paint.
+    // A remote image keeps its own URL; a path that names nothing is nothing to paint. The
+    // absent case is Windows-shaped on purpose: a POSIX-absolute absent path is by design
+    // indistinguishable from a served path, so it is asserted in the check above instead.
     assert.equal(resolveImageUrl(normalizeConfig({ image: 'https://example.test/bg.jpg' })), 'https://example.test/bg.jpg')
     assert.equal(resolveImageUrl(normalizeConfig({ image: '' })), null)
-    assert.equal(resolveImageUrl(normalizeConfig({ image: join(directory, 'absent.png') })), null)
+    assert.equal(resolveImageUrl(normalizeConfig({ image: 'D:\\absent-9f2a\\bg.png' })), null)
     assert.equal(imageVersion(join(directory, 'absent.png')), 'missing')
   } finally {
     rmSync(directory, { recursive: true, force: true })

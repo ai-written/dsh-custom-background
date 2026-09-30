@@ -1,6 +1,6 @@
 {
   "name": "dsh-custom-background",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Background image with site-wide frosted glass for the DeepSeek Harness web GUI",
   "type": "module",
   "main": "lib/index.js",

@@ -117,6 +117,8 @@ Toast / Tooltip / HoverCard 故意保持不透明：它们是浮在文字上的�
 npm test        # 33 项离线检查：配置钳制、路径解析、生成的 CSS、apply 契约、表单写入、版本化 URL
 ```
 
+Windows、Linux/macOS 都要能过：CI（`ubuntu-latest`）跑的是同一套，而路径行为是平台相关的——POSIX 绝对路径 `/home/me/bg.png` 和 Windows 的 `D:\pics\bg.png` 必须走同一条「本地文件」分支，否则一边能用、另一边静默不画图。想在本地验 Linux 行为，用 WSL 跑同一条 `npm test` 即可。
+
 像素效果、真实加载路径需要跑一次 GUI 才算验过。
 
 ## 发布
