@@ -1,0 +1,22 @@
+# dsh-custom-background bundle patch.
+#
+# ONE inserted row, named by the bare package name, and nothing else.
+#
+# `dsh-client-modules` refuses to compose when two active Loader rows resolve to the same
+# package, and it checks that at boot: a second row pointing at `./client.js` would make the
+# host exit before printing its URL. The browser half is therefore reached through this one
+# row — `package.json` declares `dsh.client`, and the client bundle is served from
+# `exports["./client"]`.
+#
+# The row ships with neutral configuration. A deployment's own image path and tuning belong
+# in the profile patch layer (`$DSH_HOME/profiles/<name>/cordis.patch.yml`), which is applied
+# after every bundle layer:
+#
+#   - id: custom-background
+#     config:
+#       enabled: true
+#       image: D:/pictures/wallpaper.jpg
+#
+- insert:
+    - id: custom-background
+      name: dsh-custom-background
