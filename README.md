@@ -5,11 +5,19 @@
 - **宿主半**（`lib/index.js`）读配置、必要时用一条专用路由把本地图片发给浏览器，并把生成好的样式表注入每个 index 响应。
 - **浏览器半**（`client.js`）把首帧用的引导样式换成自己这个插件所持有的副本，卸载 / 热重载时随插件一起消失。
 
-没有依赖（`link:` 安装的插件只会从自己的目录解析 import，多一个依赖就多一次安装才不坏）。
+只有一个运行期依赖：`@deepseek-ai/schemastery`（宿主半的 `Config` schema 用它声明，那是「可配置」的前提）；浏览器半除了 DSH 自带的 React 之外不 require 任何东西。
 
 ## 安装
 
-**CLI 的 `web` 等 profile**：`dsh plugin --profile web add "dsh-custom-background@link:D:/code/github/dsh-custom-background"`
+从 npm 装（发布在 [`dsh-custom-background`](https://www.npmjs.com/package/dsh-custom-background)）：
+
+```bash
+dsh plugin --profile web add dsh-custom-background
+```
+
+它会把依赖与 `dsh.profile.bundles` 一起写好；桌面版的 `desktop` profile 见下一节。
+
+开发时用本地路径：`dsh plugin --profile web add "dsh-custom-background@link:D:/code/github/dsh-custom-background"`
 （它会同时写好依赖和 `dsh.profile.bundles`），然后在 profile 的 `cordis.patch.yml` 里配置。
 
 **Electron 桌面版的 `desktop` profile**：`dsh plugin` 会拒绝（`profile "desktop" is managed exclusively by the Electron application`），手工两步：
